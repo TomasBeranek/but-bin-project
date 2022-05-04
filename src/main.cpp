@@ -22,6 +22,7 @@ int main(int argc, char const *argv[]) {
   int elitism =             config["Elitism"].asInt();
   int parentPopulation =    config["ParentPopulation"].asInt();
   int mutationPercetange =  config["MutationPercetange"].asInt();
+  int generations =         config["Generations"].asInt();
 
   vector<GameOfLife> population;
 
