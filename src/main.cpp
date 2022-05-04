@@ -1,20 +1,35 @@
 #include <string>
+#include <jsoncpp/json/value.h>
+#include <jsoncpp/json/reader.h>
+#include <fstream>
+#include <iostream>
 
 #include "game_of_life.h"
 
 using namespace std;
 
-// argv[1] -- size of map
-// argv[2] -- output file with map configuration
 int main(int argc, char const *argv[]) {
-  size_t gameSize = stoi(argv[1]);
-  string outputFileName = argv[2];
+  ifstream configFile("config.json");
+  Json::Reader reader;
+  Json::Value config;
+  reader.parse(configFile, config);
 
-  GameOfLife* gol = new GameOfLife (gameSize);
+  string targetMapFile =    config["TargetMap"].asString();
+  string outputMapFile =    config["OutputMap"].asString();
+  int mapSize =             config["MapSize"].asInt();
+  int steps =               config["Steps"].asInt();
+  int populationSize =      config["Population"].asInt();
+  int elitism =             config["Elitism"].asInt();
+  int parentPopulation =    config["ParentPopulation"].asInt();
+  int mutationPercetange =  config["MutationPercetange"].asInt();
+
+  vector<GameOfLife> population;
+
+  GameOfLife* gol = new GameOfLife (mapSize);
 
   gol->makeStep(1000);
 
-  gol->saveMap(outputFileName);
+  gol->saveMap(outputMapFile);
 
   delete gol;
 

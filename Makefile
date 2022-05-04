@@ -1,23 +1,25 @@
 CPPC=g++
-CPPC_OPTS=-Wall -Werror
+CPPC_OPTS=-Wall
 SRC_DIR=src
-MAPS_DIR=maps
 BIN=bin-project
-MAP_SIZE=64
 
-OUTPUT_FILE=$(MAPS_DIR)/output.gol
 SRC=$(SRC_DIR)/game_of_life.cpp $(SRC_DIR)/main.cpp
 HDR=$(SRC_DIR)/game_of_life.h
+
+TEST_COMMAND={ time ./$(BIN) $(MAP_SIZE) $(OUTPUT_FILE); } > /dev/null
 
 all: run
 
 run:
-	./$(BIN) $(MAP_SIZE) $(OUTPUT_FILE)
+	./$(BIN)
 
 install: compile
 
 compile: clean
-	$(CPPC) $(CPPC_OPTS) $(SRC) $(HDR) -o $(BIN)
+	$(CPPC) $(CPPC_OPTS) $(SRC) $(HDR) -o $(BIN) -ljsoncpp
 
 clean:
 	rm -rf $(BIN)
+
+test: install
+	python3 measure.py "$(TEST_COMMAND)"
