@@ -1,0 +1,10 @@
+{
+  "TargetMap": "patterns/earth.gol",
+  "OutputMap": "best_solution.gol",
+  "MapSize": 100,
+  "Steps": 150,
+  "Population": 20,
+  "Elitism": 1,
+  "ParentPopulation": 10,
+  "MutationPercetange" 5
+}
