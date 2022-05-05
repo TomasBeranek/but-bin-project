@@ -3,10 +3,10 @@
   "OutputMap": "best_solution.gol",
   "MapSize": 100,
   "StepsGOL": 150,
-  "Population": 20,
+  "Population": 21,
   "Elitism": 1,
   "ParentPopulation": 9,
-  "MutationPercetange": 5,
+  "MaxMutationPercetange": 5,
   "Generations": 20,
-  "Crossover": 0
+  "Crossover": -5
 }

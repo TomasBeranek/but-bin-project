@@ -139,3 +139,12 @@ void GameOfLife::printMap(){
     cout << "\n";
   }
 }
+
+size_t GameOfLife::getSize() {
+  return this->size;
+}
+
+void GameOfLife::resetToStart() {
+  memcpy(this->map, this->startingMap, (this->size * this->size) * sizeof(bool));
+  memcpy(this->oldMap, this->startingMap, (this->size * this->size) * sizeof(bool));
+}

@@ -4,8 +4,10 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <climits>
 
 #include "game_of_life.h"
+#include "ea_operations.h"
 
 using namespace std;
 
@@ -22,7 +24,7 @@ int main(int argc, char const *argv[]) {
   int populationSize =      config["Population"].asInt();
   int elitism =             config["Elitism"].asInt();
   int parentPopulation =    config["ParentPopulation"].asInt();
-  int mutationPercetange =  config["MutationPercetange"].asInt();
+  int mutationPercetange =  config["MaxMutationPercetange"].asInt();
   int generations =         config["Generations"].asInt();
   // 0 for uniform, otherwise it says how many squares are combined
   int crossoverType =       config["Crossover"].asInt();
@@ -40,6 +42,7 @@ int main(int argc, char const *argv[]) {
   vector<GameOfLife*> population;
   vector<GameOfLife*> parents;
   vector<tuple<int, int>> fitness(populationSize); // number of different fields
+  tuple<int, int> bestFitness = {INT_MAX, -1};
 
   // TODO: just init parents and then combine them
   // random population initialization
@@ -79,25 +82,24 @@ int main(int argc, char const *argv[]) {
       parents[i]->loadMap(individual->getMap());
     }
 
-    // copy parents back to population
-    for (int i = 0; i < parentPopulation; i++) {
-      population[i]->loadMap(parents[i]->getMap());
-    }
-
+    // TODO: if there are two individuals with same fitness pick the new one
     // automatically add best individual to next generation -- elitism
     GameOfLife* individual = population[get<1>(fitness[0])];
-    parents[parentPopulation]->loadMap(individual->getMap());
+    population[0]->loadMap(individual->getMap());
 
     // crossing of parents
-    for (int i = parentPopulation + elitism; i < populationSize; i+=2) {
+    for (int i = elitism; i < populationSize; i+=2) {
       GameOfLife* parentA = parents[rand() % parentPopulation];
       GameOfLife* parentB = parents[rand() % parentPopulation];
       GameOfLife* descentantA = population[i];
       GameOfLife* descentantB = population[i+1];
+      cout << "Saving to: " << i << endl;
+      crossover(parentA, parentB, descentantA, descentantB, crossoverType);
+    }
 
-      descentantA->loadMap(parentA->getMap());
-      descentantB->loadMap(parentB->getMap());
-      //crossover(parentA, parentB, descentantA, descentantB);
+    // apply mutation to all population (except the first one)
+    for (int i = 1; i < populationSize; i++) {
+      mutate(population[i], rand() % (mutationPercetange + 1));
     }
 
     cout << endl;
@@ -108,8 +110,10 @@ int main(int argc, char const *argv[]) {
     }
     cout << endl;
 
-    // int best_fitness = *max_element(fitness.begin(), fitness.end());
-    // cerr << "Generation: "<< g << "\tBest fitness: " << best_fitness << endl;
+    if (get<0>(fitness[0]) < get<0>(bestFitness)) {
+      bestFitness = {get<0>(fitness[0]), 0};
+      cout << "New best fitness: " << get<0>(bestFitness) << "\tGeneration: " << g << endl;
+    }
   } // for each generation
 
   // free GOL objects

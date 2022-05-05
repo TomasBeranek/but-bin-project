@@ -3,8 +3,8 @@ CPPC_OPTS=-Wall
 SRC_DIR=src
 BIN=bin-project
 
-SRC=$(SRC_DIR)/game_of_life.cpp $(SRC_DIR)/main.cpp
-HDR=$(SRC_DIR)/game_of_life.h
+SRC=$(SRC_DIR)/game_of_life.cpp $(SRC_DIR)/main.cpp $(SRC_DIR)/ea_operations.cpp
+HDR=$(SRC_DIR)/game_of_life.h $(SRC_DIR)/ea_operations.h
 
 TEST_COMMAND={ time ./$(BIN) $(MAP_SIZE) $(OUTPUT_FILE); } > /dev/null
 
