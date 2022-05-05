@@ -5,7 +5,8 @@
   "StepsGOL": 150,
   "Population": 20,
   "Elitism": 1,
-  "ParentPopulation": 10,
-  "MutationPercetange" 5,
-  "Generations": 1000,
+  "ParentPopulation": 9,
+  "MutationPercetange": 5,
+  "Generations": 20,
+  "Crossover": 0
 }

@@ -14,23 +14,28 @@ GameOfLife::GameOfLife(size_t size, string inputFileName){
   std::cout << "constructor with file\n";
 }
 
-GameOfLife::GameOfLife(size_t size){
+GameOfLife::GameOfLife(size_t size, bool* targetMap, bool randomInit){
   this->size = size;
   this->map = new bool[size*size];
   this->oldMap = new bool[size*size];
+  this->targetMap = targetMap;
+  this->startingMap = new bool[size*size];
 
-  auto gen = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());
+  if (randomInit){
+    for (size_t i = 0; i < size * size; i++){
+      this->map[i] = rand() % 2;
+    }
 
-  for (size_t i = 0; i < size * size; i++){
-    this->map[i] = gen();
+    // TODO: no need to copy
+    memcpy(this->oldMap, this->map, (this->size * this->size) * sizeof(bool));
+    memcpy(this->startingMap, this->map, (this->size * this->size) * sizeof(bool));
   }
-
-  memcpy(this->oldMap, this->map, (this->size * this->size) * sizeof(bool));
 }
 
 GameOfLife::~GameOfLife(){
   delete this->map;
   delete this->oldMap;
+  delete this->startingMap;
 }
 
 size_t GameOfLife::neighboursCnt(size_t i, size_t j){
@@ -60,10 +65,11 @@ size_t GameOfLife::neighboursCnt(size_t i, size_t j){
   return cnt;
 }
 
-void GameOfLife::makeStep(size_t steps){
-  for (size_t n = 0;  n < steps; n++){
-    this->printMap();
-    cout << "\n\n";
+int GameOfLife::makeStep(size_t steps){
+  int bestFitness = 0;
+
+  for (size_t n = 0; n < steps; n++){
+    int fitness = 0;
 
     for (size_t i = 0; i < this->size; i++){
       for (size_t j = 0; j < this->size; j++){
@@ -82,19 +88,32 @@ void GameOfLife::makeStep(size_t steps){
             this->map[i*this->size +j] = 1; // cell became alive
           }
         }
+
+        // calculate fitness
+        if (this->map[i*this->size +j] != this->targetMap[i*this->size +j]) {
+          fitness++;
+        }
       }
+    }
+
+    if (fitness > bestFitness) {
+      bestFitness = fitness;
     }
 
     memcpy(this->oldMap, this->map, (this->size * this->size) * sizeof(bool));
   }
+
+  return bestFitness;
 }
 
 void GameOfLife::loadMap(bool *newMap){
   memcpy(this->map, newMap, (this->size * this->size) * sizeof(bool));
+  memcpy(this->oldMap, newMap, (this->size * this->size) * sizeof(bool));
+  memcpy(this->startingMap, newMap, (this->size * this->size) * sizeof(bool));
 }
 
-bool *GameOfLife::getMap(string outputFileName){
-  return this->map;
+bool *GameOfLife::getMap(){
+  return this->startingMap;
 }
 
 void GameOfLife::saveMap(string outputFileName){

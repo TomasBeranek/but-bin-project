@@ -3,6 +3,7 @@
 #include <jsoncpp/json/reader.h>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 #include "game_of_life.h"
 
@@ -17,22 +18,104 @@ int main(int argc, char const *argv[]) {
   string targetMapFile =    config["TargetMap"].asString();
   string outputMapFile =    config["OutputMap"].asString();
   int mapSize =             config["MapSize"].asInt();
-  int steps =               config["Steps"].asInt();
+  int steps =               config["StepsGOL"].asInt();
   int populationSize =      config["Population"].asInt();
   int elitism =             config["Elitism"].asInt();
   int parentPopulation =    config["ParentPopulation"].asInt();
   int mutationPercetange =  config["MutationPercetange"].asInt();
   int generations =         config["Generations"].asInt();
+  // 0 for uniform, otherwise it says how many squares are combined
+  int crossoverType =       config["Crossover"].asInt();
 
-  vector<GameOfLife> population;
+  int newIndividuals = populationSize - parentPopulation - elitism;
 
-  GameOfLife* gol = new GameOfLife (mapSize);
+  // load target map
+  bool* targetMap = new bool[mapSize*mapSize];
+  FILE* f = fopen(targetMapFile.c_str(), "r");
 
-  gol->makeStep(1000);
+  for (int i = 0; i < mapSize * mapSize; i++){
+    targetMap[i] = getc(f) == '1';
+  }
 
-  gol->saveMap(outputMapFile);
+  vector<GameOfLife*> population;
+  vector<GameOfLife*> parents;
+  vector<tuple<int, int>> fitness(populationSize); // number of different fields
 
-  delete gol;
+  // TODO: just init parents and then combine them
+  // random population initialization
+  srand(time(NULL));
+  for (int i = 0; i < populationSize; i++) {
+    population.push_back(new GameOfLife (mapSize, targetMap, true));
+  }
+
+  // init parents
+  for (int i = 0; i < parentPopulation; i++) {
+    parents.push_back(new GameOfLife (mapSize, targetMap, false));
+  }
+
+  for (int g = 0; g < generations; g++) {
+    cout << "Genration: " << g << endl;
+
+    // calculate fitness
+    // TODO: do it in parallel
+    for (int i = 0; i < populationSize; i++) {
+      fitness[i] = tuple<int, int>(population[i]->makeStep(steps), i);
+    }
+
+    for (int i = 0; i < populationSize; i++) {
+      cout << "Fitness: " << get<0>(fitness[i]) << "\tIndividual: " << get<1>(fitness[i]) << "\tOriginal: " << population[get<1>(fitness[i])]->getMap() << endl;
+    }
+
+    // sort population by fitness -- lower better -> ascending sort
+    std::sort(fitness.begin(), fitness.end(),
+              [](std::tuple<int, int> &a, std::tuple<int, int> &b)
+              { return std::get<0>(a) < std::get<0>(b); });
+
+
+    // copy best individuals to parents
+    // TODO: add more ways of picking parents
+    for (int i = 0; i < parentPopulation; i++) {
+      GameOfLife* individual = population[get<1>(fitness[i])];
+      parents[i]->loadMap(individual->getMap());
+    }
+
+    // copy parents back to population
+    for (int i = 0; i < parentPopulation; i++) {
+      population[i]->loadMap(parents[i]->getMap());
+    }
+
+    // automatically add best individual to next generation -- elitism
+    GameOfLife* individual = population[get<1>(fitness[0])];
+    parents[parentPopulation]->loadMap(individual->getMap());
+
+    // crossing of parents
+    for (int i = parentPopulation + elitism; i < populationSize; i+=2) {
+      GameOfLife* parentA = parents[rand() % parentPopulation];
+      GameOfLife* parentB = parents[rand() % parentPopulation];
+      GameOfLife* descentantA = population[i];
+      GameOfLife* descentantB = population[i+1];
+
+      descentantA->loadMap(parentA->getMap());
+      descentantB->loadMap(parentB->getMap());
+      //crossover(parentA, parentB, descentantA, descentantB);
+    }
+
+    cout << endl;
+
+
+    for (int i = 0; i < populationSize; i++) {
+      cout << "Fitness: " << get<0>(fitness[i]) << "\tIndividual: " << get<1>(fitness[i]) << "\tOriginal: " << population[get<1>(fitness[i])]->getMap() << endl;
+    }
+    cout << endl;
+
+    // int best_fitness = *max_element(fitness.begin(), fitness.end());
+    // cerr << "Generation: "<< g << "\tBest fitness: " << best_fitness << endl;
+  } // for each generation
+
+  // free GOL objects
+  for (int i = 0; i < populationSize; i++) {
+    delete population[i];
+  }
 
   return 0;
 }

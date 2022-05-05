@@ -6,17 +6,19 @@
 class GameOfLife{
   public:
     GameOfLife(size_t size, std::string inputFileName);
-    GameOfLife(size_t size);
+    GameOfLife(size_t size, bool* targetMap, bool randomInit);
     ~GameOfLife();
-    void makeStep(size_t steps);
+    int makeStep(size_t steps);
     void loadMap(bool *newMap);
-    bool *getMap(std::string outputFileName);
+    bool *getMap();
     void saveMap(std::string outputFileName);
     void printMap();
 
   protected:
+    bool *targetMap = NULL;
     bool *map = NULL;
     bool *oldMap = NULL;
+    bool *startingMap = NULL;
     size_t size = 0;
 
     size_t neighboursCnt(size_t i, size_t j);
