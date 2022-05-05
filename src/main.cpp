@@ -101,7 +101,7 @@ int main(int argc, char const *argv[]) {
   } // for each generation
 
   // save the best solution
-  population[0]->saveMap(outputMapFile);
+  population[0]->saveBestMap(outputMapFile, steps);
 
   // free GOL objects
   for (int i = 0; i < populationSize; i++) {

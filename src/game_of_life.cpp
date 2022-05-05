@@ -4,6 +4,7 @@
 #include <functional>
 #include <cstring>
 #include <fstream>
+#include <climits>
 
 #include "game_of_life.h"
 
@@ -66,7 +67,7 @@ size_t GameOfLife::neighboursCnt(size_t i, size_t j){
 }
 
 int GameOfLife::makeStep(size_t steps){
-  int bestFitness = 0;
+  int bestFitness = INT_MAX;
 
   for (size_t n = 0; n < steps; n++){
     int fitness = 0;
@@ -96,7 +97,7 @@ int GameOfLife::makeStep(size_t steps){
       }
     }
 
-    if (fitness > bestFitness) {
+    if (fitness < bestFitness) {
       bestFitness = fitness;
     }
 
@@ -147,4 +148,24 @@ size_t GameOfLife::getSize() {
 void GameOfLife::resetToStart() {
   memcpy(this->map, this->startingMap, (this->size * this->size) * sizeof(bool));
   memcpy(this->oldMap, this->startingMap, (this->size * this->size) * sizeof(bool));
+}
+
+void GameOfLife::saveBestMap(string outputFileName, int steps){
+  bool* bestMap = new bool[size*size];
+  int bestFitness = INT_MAX;
+  int fitness;
+  this->resetToStart();
+
+  for (int i = 0; i < steps; i++) {
+    fitness = this->makeStep(1);
+
+    if (fitness < bestFitness) {
+      memcpy(bestMap, this->map, (this->size * this->size) * sizeof(bool));
+    }
+  }
+
+  // overwrite starting map and save it to file
+  this->startingMap = bestMap;
+  this->saveMap(outputFileName);
+  return;
 }
