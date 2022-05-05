@@ -29,8 +29,6 @@ int main(int argc, char const *argv[]) {
   // 0 for uniform, otherwise it says how many squares are combined
   int crossoverType =       config["Crossover"].asInt();
 
-  int newIndividuals = populationSize - parentPopulation - elitism;
-
   // load target map
   bool* targetMap = new bool[mapSize*mapSize];
   FILE* f = fopen(targetMapFile.c_str(), "r");
@@ -57,16 +55,10 @@ int main(int argc, char const *argv[]) {
   }
 
   for (int g = 0; g < generations; g++) {
-    cout << "Genration: " << g << endl;
-
     // calculate fitness
     // TODO: do it in parallel
     for (int i = 0; i < populationSize; i++) {
       fitness[i] = tuple<int, int>(population[i]->makeStep(steps), i);
-    }
-
-    for (int i = 0; i < populationSize; i++) {
-      cout << "Fitness: " << get<0>(fitness[i]) << "\tIndividual: " << get<1>(fitness[i]) << "\tOriginal: " << population[get<1>(fitness[i])]->getMap() << endl;
     }
 
     // sort population by fitness -- lower better -> ascending sort
@@ -93,7 +85,6 @@ int main(int argc, char const *argv[]) {
       GameOfLife* parentB = parents[rand() % parentPopulation];
       GameOfLife* descentantA = population[i];
       GameOfLife* descentantB = population[i+1];
-      cout << "Saving to: " << i << endl;
       crossover(parentA, parentB, descentantA, descentantB, crossoverType);
     }
 
@@ -102,19 +93,15 @@ int main(int argc, char const *argv[]) {
       mutate(population[i], rand() % (mutationPercetange + 1));
     }
 
-    cout << endl;
-
-
-    for (int i = 0; i < populationSize; i++) {
-      cout << "Fitness: " << get<0>(fitness[i]) << "\tIndividual: " << get<1>(fitness[i]) << "\tOriginal: " << population[get<1>(fitness[i])]->getMap() << endl;
-    }
-    cout << endl;
-
+    // save and print the best individual so far
     if (get<0>(fitness[0]) < get<0>(bestFitness)) {
       bestFitness = {get<0>(fitness[0]), 0};
       cout << "New best fitness: " << get<0>(bestFitness) << "\tGeneration: " << g << endl;
     }
   } // for each generation
+
+  // save the best solution
+  population[0]->saveMap(outputMapFile);
 
   // free GOL objects
   for (int i = 0; i < populationSize; i++) {

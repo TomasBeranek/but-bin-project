@@ -123,7 +123,7 @@ void GameOfLife::saveMap(string outputFileName){
 
   for (size_t i = 0; i < this->size; i++){
     for (size_t j = 0; j < this->size; j++){
-      f << this->map[i*this->size + j];
+      f << this->startingMap[i*this->size + j];
     }
     f << "\n";
   }

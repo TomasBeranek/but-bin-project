@@ -19,7 +19,7 @@ compile: clean
 	$(CPPC) $(CPPC_OPTS) $(SRC) $(HDR) -o $(BIN) -ljsoncpp
 
 clean:
-	rm -rf $(BIN)
+	rm -rf $(BIN) best_solution.gol
 
 test: install
 	python3 measure.py "$(TEST_COMMAND)"

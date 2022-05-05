@@ -45,7 +45,6 @@ void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, i
       // flip on points
       if (std::count(points.begin(), points.end(), i)) {
         flip = !flip;
-        cout << i << endl;
       }
 
       if (flip) {
