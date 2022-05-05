@@ -7,6 +7,6 @@
   "Elitism": 1,
   "ParentPopulation": 9,
   "MaxMutationPercetange": 5,
-  "Generations": 20,
+  "Generations": 10,
   "Crossover": -5
 }
