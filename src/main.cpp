@@ -97,11 +97,11 @@ int main(int argc, char const *argv[]) {
     if (get<0>(fitness[0]) < get<0>(bestFitness)) {
       bestFitness = {get<0>(fitness[0]), 0};
       cout << "New best fitness: " << get<0>(bestFitness) << "\tGeneration: " << g << endl;
+
+      // save the best solution
+      population[0]->saveBestMap(outputMapFile, steps);
     }
   } // for each generation
-
-  // save the best solution
-  population[0]->saveBestMap(outputMapFile, steps);
 
   // free GOL objects
   for (int i = 0; i < populationSize; i++) {
