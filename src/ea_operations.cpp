@@ -7,26 +7,40 @@
 using namespace std;
 
 
-void randRectangle(int *startX, int *endX, int *startY, int *endY, int size) {
-  int p1X = rand() % size;
-  int p1Y = rand() % size;
-  int p2X = rand() % size;
-  int p2Y = rand() % size;
+void randRectangle(int *startX, int *endX, int *startY, int *endY, int size, int rectSize) {
+  // truly random rectangle
+  if (rectSize == -1){
+    int p1X = rand() % size;
+    int p1Y = rand() % size;
+    int p2X = rand() % size;
+    int p2Y = rand() % size;
 
-  if (p1X < p2X) {
-    *startX = p1X;
-    *endX = p2X;
-  } else {
-    *startX = p2X;
-    *endX = p1X;
-  }
+    if (p1X < p2X) {
+      *startX = p1X;
+      *endX = p2X;
+    } else {
+      *startX = p2X;
+      *endX = p1X;
+    }
 
-  if (p1Y < p2Y) {
-    *startY = p1Y;
-    *endY = p2Y;
-  } else {
-    *startY = p2Y;
-    *endY = p1Y;
+    if (p1Y < p2Y) {
+      *startY = p1Y;
+      *endY = p2Y;
+    } else {
+      *startY = p2Y;
+      *endY = p1Y;
+    }
+  } else { // rectangle with fixted size
+    // generate middle point
+    int X = rand() % size;
+    int Y = rand() % size;
+
+    int half = (rectSize - 1) / 2;
+
+    *startX = max(0, X-half);
+    *endX = min(size-1, X+half);
+    *startY = max(0, Y-half);
+    *endY = min(size-1, Y+half);
   }
 }
 
@@ -99,7 +113,7 @@ void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, i
     // for each spatial crossover generate two points -- rectangle
     int startX, endX, startY, endY;
 
-    randRectangle(&startX, &endX, &startY, &endY, size);
+    randRectangle(&startX, &endX, &startY, &endY, size, -1);
 
     // negate values in masks in generated rectangle
     for (int x = startX; x <= endX; x++) {
@@ -125,15 +139,39 @@ void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, i
 }
 
 
-void mutate(GameOfLife* x, int p) {
+void mutate(GameOfLife* x, int p, int concentratedP) {
+  if (!p)
+    return;
+
   bool* map = x->getMap();
   int size = x->getSize();
-  int cellsToMutate = (int)(((size*size) / 100.0) * p);
 
-  // randomly flip 'cellsToMutate' pixels
-  for (int i = 0; i < cellsToMutate; i++) {
-    int index = rand() % (size * size);
-    map[index] = !map[index];
+  // normal mutation
+  if (p > 0) {
+    int cellsToMutate = (int)(((size*size) / 100.0) * p);
+
+    // randomly flip 'cellsToMutate' pixels
+    for (int i = 0; i < cellsToMutate; i++) {
+      int index = rand() % (size * size);
+      map[index] = !map[index];
+    }
+  } else { // concentrated mutation
+    p = -p; // to make it positive number
+    int maxRectSize = ((int)(0.05*size))*2 + 1; // it will always be odd number
+    for (int i = 0; i < p; i++) {
+      // generate rectangle in which to apply concentrated mutation
+      int startX, endX, startY, endY;
+
+      randRectangle(&startX, &endX, &startY, &endY, size, maxRectSize);
+
+      // negate values in masks in generated rectangle
+      for (int x = startX; x <= endX; x++) {
+        for (int y = startY; y <= endY; y++) {
+          if ((rand() % 100) < concentratedP)
+            map[x*size + y] = !map[x*size + y];
+        }
+      }
+    }
   }
 
   x->resetToStart();

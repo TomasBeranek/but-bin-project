@@ -28,6 +28,7 @@ int main(int argc, char const *argv[]) {
   int generations =         config["Generations"].asInt();
   // 0 for uniform, otherwise it says how many squares are combined
   int crossoverType =       config["Crossover"].asInt();
+  int concentratedMutation =config["ConcentratedMutation"].asInt();
 
   // load target map
   bool* targetMap = new bool[mapSize*mapSize];
@@ -96,7 +97,10 @@ int main(int argc, char const *argv[]) {
 
     // apply mutation to all population (except the first one)
     for (int i = 1; i < populationSize; i++) {
-      mutate(population[i], rand() % (mutationPercetange + 1));
+      if (mutationPercetange > 0)
+        mutate(population[i], rand() % (mutationPercetange + 1), concentratedMutation);
+      else
+        mutate(population[i], -(rand() % (-mutationPercetange + 1)), concentratedMutation);
     }
 
     cout << g << endl;
