@@ -32,9 +32,15 @@ int main(int argc, char const *argv[]) {
   // load target map
   bool* targetMap = new bool[mapSize*mapSize];
   FILE* f = fopen(targetMapFile.c_str(), "r");
+  int c;
 
   for (int i = 0; i < mapSize * mapSize; i++){
-    targetMap[i] = getc(f) == '1';
+    c = getc(f);
+    if (c == '\n'){
+      i--;
+      continue;
+    }
+    targetMap[i] = c == '1';
   }
 
   vector<GameOfLife*> population;
@@ -92,6 +98,8 @@ int main(int argc, char const *argv[]) {
     for (int i = 1; i < populationSize; i++) {
       mutate(population[i], rand() % (mutationPercetange + 1));
     }
+
+    cout << g << endl;
 
     // save and print the best individual so far
     if (get<0>(fitness[0]) < get<0>(bestFitness)) {
