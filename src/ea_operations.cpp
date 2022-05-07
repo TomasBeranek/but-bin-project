@@ -72,9 +72,9 @@ void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, i
 
 
 void mutate(GameOfLife* x, int p) {
-  int cellsToMutate = (x->getSize() / 100) * 5;
   bool* map = x->getMap();
   int size = x->getSize();
+  int cellsToMutate = (int)(((size*size) / 100.0) * p);
 
   // randomly flip 'cellsToMutate' pixels
   for (int i = 0; i < cellsToMutate; i++) {
