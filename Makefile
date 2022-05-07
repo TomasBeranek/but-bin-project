@@ -19,7 +19,11 @@ compile: clean
 	$(CPPC) $(CPPC_OPTS) $(SRC) $(HDR) -o $(BIN) -ljsoncpp
 
 clean:
-	rm -rf $(BIN) best_solution.gol
+	rm -rf $(BIN) best_solution.gol debug
 
 test: install
 	python3 measure.py "$(TEST_COMMAND)"
+
+debug: clean
+	$(CPPC) $(CPPC_OPTS) -I$(SRC_DIR) $(SRC_DIR)/game_of_life.cpp tests/main.cpp $(SRC_DIR)/ea_operations.cpp $(HDR) -o debug -ljsoncpp
+	./debug
