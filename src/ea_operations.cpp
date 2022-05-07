@@ -6,6 +6,30 @@
 
 using namespace std;
 
+
+void randRectangle(int *startX, int *endX, int *startY, int *endY, int size) {
+  int p1X = rand() % size;
+  int p1Y = rand() % size;
+  int p2X = rand() % size;
+  int p2Y = rand() % size;
+
+  if (p1X < p2X) {
+    *startX = p1X;
+    *endX = p2X;
+  } else {
+    *startX = p2X;
+    *endX = p1X;
+  }
+
+  if (p1Y < p2Y) {
+    *startY = p1Y;
+    *endY = p2Y;
+  } else {
+    *startY = p2Y;
+    *endY = p1Y;
+  }
+}
+
 void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, int crossoverType) {
   bool *pAmap = pA->getMap();
   bool *pBmap = pB->getMap();
@@ -65,9 +89,39 @@ void crossover(GameOfLife* pA, GameOfLife* pB, GameOfLife* dA, GameOfLife* dB, i
   dA->loadMap(pA->getMap());
   dB->loadMap(pB->getMap());
 
+  // if there is 0, do not change anything, if there is 1 take this item from B
+  bool* mask = new bool[size*size];
+
+  for (int i = 0; i < size * size; i++)
+    mask[i] = 0;
+
   for (int i = 0; i < crossoverType; i++) {
-    exit(1);
+    // for each spatial crossover generate two points -- rectangle
+    int startX, endX, startY, endY;
+
+    randRectangle(&startX, &endX, &startY, &endY, size);
+
+    // negate values in masks in generated rectangle
+    for (int x = startX; x <= endX; x++) {
+      for (int y = startY; y <= endY; y++) {
+        mask[x*size + y] = !mask[x*size + y];
+      }
+    }
   }
+
+  // create new population according to mask
+  for (int i = 0; i < size * size; i++) {
+    if (mask[i]) {
+      dAmap[i] = pBmap[i];
+      dBmap[i] = pAmap[i];
+    } else {
+      dAmap[i] = pAmap[i];
+      dBmap[i] = pBmap[i];
+    }
+  }
+
+  dA->loadMap(dAmap);
+  dB->loadMap(dBmap);
 }
 
 
