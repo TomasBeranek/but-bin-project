@@ -132,6 +132,21 @@ void GameOfLife::saveMap(string outputFileName){
   f.close();
 }
 
+void GameOfLife::saveCurrentMap(string outputFileName){
+  ofstream f;
+
+  f.open(outputFileName);
+
+  for (size_t i = 0; i < this->size; i++){
+    for (size_t j = 0; j < this->size; j++){
+      f << this->map[i*this->size + j];
+    }
+    f << "\n";
+  }
+
+  f.close();
+}
+
 void GameOfLife::printMap(){
   for (size_t i = 0; i < this->size; i++){
     for (size_t j = 0; j < this->size; j++){

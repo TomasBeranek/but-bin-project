@@ -13,6 +13,7 @@ class GameOfLife{
     bool *getMap();
     void saveMap(std::string outputFileName);
     void saveBestMap(std::string outputFileName, int steps);
+    void saveCurrentMap(std::string outputFileName);
     void printMap();
     size_t getSize();
     void resetToStart();
