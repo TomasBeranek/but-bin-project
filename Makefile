@@ -1,5 +1,5 @@
 CPPC=g++
-CPPC_OPTS=-Wall
+CPPC_OPTS=-Wall -Ofast
 SRC_DIR=src
 BIN=bin-project
 
