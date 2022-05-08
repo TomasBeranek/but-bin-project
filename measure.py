@@ -2,8 +2,7 @@ import subprocess as subprocess
 import sys
 import json
 
-if __name__ == '__main__':
-    command = sys.argv[1]
+def getUpdatedCells(command):
     o, e = subprocess.Popen(['bash', '-c', command], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     time_output = e.decode('utf-8')
@@ -14,16 +13,17 @@ if __name__ == '__main__':
 
     # For testing:
     # {
-    #   "TargetMap": "patterns/earth.gol",
+    #   "TargetMap": "patterns/1random64.gol",
     #   "OutputMap": "best_solution.gol",
-    #   "MapSize": 100,
-    #   "StepsGOL": 150,
+    #   "MapSize": 64,
+    #   "StepsGOL": 100,
     #   "Population": 21,
     #   "Elitism": 1,
     #   "ParentPopulation": 9,
-    #   "MaxMutationPercetange": 5,
+    #   "MaxMutationPercetange": -5,
     #   "Generations": 10,
-    #   "Crossover": -5
+    #   "Crossover": 5,
+    #   "ConcentratedMutation": 50
     # }
 
     with open('config.json', 'r') as f:
@@ -37,5 +37,21 @@ if __name__ == '__main__':
     updated_cells = generations * population * steps * map_size^2
     updated_cells_s = updated_cells / total_s
 
-    print(f"Total time: {total_s}s")
-    print(f"Updates per second: {int(updated_cells_s)}")
+    return total_s, updated_cells_s
+
+if __name__ == '__main__':
+    command = sys.argv[1]
+
+    total_s, updated_cells_s = 0, 0
+    runs = 3
+
+    for i in range(0,runs):
+        seconds, cells = getUpdatedCells(command)
+        total_s += seconds
+        updated_cells_s += cells
+
+    total_s_avg = total_s / runs
+    updated_cells_s_avg = updated_cells_s / runs
+
+    print(f"Total time: {total_s_avg}s")
+    print(f"Updates per second: {int(updated_cells_s_avg)}")
