@@ -10,12 +10,8 @@
 
 using namespace std;
 
-GameOfLife::GameOfLife(size_t size, string inputFileName){
-  this->size = size;
-  std::cout << "constructor with file\n";
-}
 
-GameOfLife::GameOfLife(size_t size, bool* targetMap, bool randomInit){
+GameOfLife::GameOfLife(const size_t size, bool* targetMap, bool randomInit){
   this->size = size;
   this->map = new bool[size*size];
   this->oldMap = new bool[size*size];
@@ -24,12 +20,10 @@ GameOfLife::GameOfLife(size_t size, bool* targetMap, bool randomInit){
 
   if (randomInit){
     for (size_t i = 0; i < size * size; i++){
-      this->map[i] = rand() % 2;
+      this->startingMap[i] = rand() % 2;
     }
 
-    // TODO: no need to copy
-    memcpy(this->oldMap, this->map, (this->size * this->size) * sizeof(bool));
-    memcpy(this->startingMap, this->map, (this->size * this->size) * sizeof(bool));
+    memcpy(this->oldMap, this->startingMap, (this->size * this->size) * sizeof(bool));
   }
 }
 
@@ -39,7 +33,7 @@ GameOfLife::~GameOfLife(){
   delete this->startingMap;
 }
 
-size_t GameOfLife::neighboursCnt(size_t i, size_t j){
+inline size_t GameOfLife::neighboursCnt(const size_t i, const size_t j){
   size_t cnt = 0;
   size_t lowerI = i - 1;
   size_t lowerJ = j - 1;
@@ -66,11 +60,12 @@ size_t GameOfLife::neighboursCnt(size_t i, size_t j){
   return cnt;
 }
 
-int GameOfLife::makeStep(size_t steps){
+int GameOfLife::makeStep(const size_t steps){
   int bestFitness = INT_MAX;
+  int fitness;
 
   for (size_t n = 0; n < steps; n++){
-    int fitness = 0;
+    fitness = 0;
 
     for (size_t i = 0; i < this->size; i++){
       for (size_t j = 0; j < this->size; j++){
@@ -108,7 +103,6 @@ int GameOfLife::makeStep(size_t steps){
 }
 
 void GameOfLife::loadMap(bool *newMap){
-  memcpy(this->map, newMap, (this->size * this->size) * sizeof(bool));
   memcpy(this->oldMap, newMap, (this->size * this->size) * sizeof(bool));
   memcpy(this->startingMap, newMap, (this->size * this->size) * sizeof(bool));
 }
@@ -161,7 +155,6 @@ size_t GameOfLife::getSize() {
 }
 
 void GameOfLife::resetToStart() {
-  memcpy(this->map, this->startingMap, (this->size * this->size) * sizeof(bool));
   memcpy(this->oldMap, this->startingMap, (this->size * this->size) * sizeof(bool));
 }
 

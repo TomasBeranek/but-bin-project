@@ -5,11 +5,21 @@
 #include <iostream>
 #include <algorithm>
 #include <climits>
+#include <thread>
 
 #include "game_of_life.h"
 #include "ea_operations.h"
 
 using namespace std;
+
+
+void getFitness(vector<tuple<int, int>> *fitness, vector<GameOfLife*> *population, int tID, int steps, int populationSize) {
+  for (int i = tID; i < populationSize; i += 12)
+    (*fitness)[i] = tuple<int, int>((*population)[i]->makeStep(steps), i);
+}
+
+void empty(){};
+
 
 int main(int argc, char const *argv[]) {
   ifstream configFile("config.json");
@@ -60,13 +70,27 @@ int main(int argc, char const *argv[]) {
   for (int i = 0; i < parentPopulation; i++) {
     parents.push_back(new GameOfLife (mapSize, targetMap, false));
   }
-
   for (int g = 0; g < generations; g++) {
     // calculate fitness
-    // TODO: do it in parallel
-    for (int i = 0; i < populationSize; i++) {
-      fitness[i] = tuple<int, int>(population[i]->makeStep(steps), i);
+    array<thread, 12> threads;
+    int tID = 0;
+
+    for( auto & t : threads )
+    {
+    	t = thread(getFitness, &fitness, &population, tID, steps, populationSize);
+      tID++;
     }
+
+    for( auto & t : threads )
+    {
+    	t.join();
+    }
+
+    // for (int i = 0; i < populationSize; i++) {
+    //   thread t1(empty);
+    //   // thread thread_obj(getFitness, fitness, population, i, steps);
+    //   fitness[i] = tuple<int, int>(population[i]->makeStep(steps), i);
+    // }
 
     // sort population by fitness -- lower better -> ascending sort
     std::sort(fitness.begin(), fitness.end(),
@@ -87,7 +111,7 @@ int main(int argc, char const *argv[]) {
     population[0]->loadMap(individual->getMap());
 
     // crossing of parents
-    for (int i = elitism; i < populationSize; i+=2) {
+    for (int i = elitism; i < (populationSize-1); i+=2) {
       GameOfLife* parentA = parents[rand() % parentPopulation];
       GameOfLife* parentB = parents[rand() % parentPopulation];
       GameOfLife* descentantA = population[i];
@@ -96,14 +120,12 @@ int main(int argc, char const *argv[]) {
     }
 
     // apply mutation to all population (except the first one)
-    for (int i = 1; i < populationSize; i++) {
+    for (int i = elitism; i < populationSize; i++) {
       if (mutationPercetange > 0)
         mutate(population[i], rand() % (mutationPercetange + 1), concentratedMutation);
       else
         mutate(population[i], -(rand() % (-mutationPercetange + 1)), concentratedMutation);
     }
-
-    cout << g << endl;
 
     // save and print the best individual so far
     if (get<0>(fitness[0]) < get<0>(bestFitness)) {
@@ -116,9 +138,13 @@ int main(int argc, char const *argv[]) {
   } // for each generation
 
   // free GOL objects
-  for (int i = 0; i < populationSize; i++) {
+  for (int i = 0; i < populationSize; i++)
     delete population[i];
-  }
+
+  for (int i = 0; i < parentPopulation; i++)
+    delete parents[i];
+
+  delete targetMap;
 
   return 0;
 }
