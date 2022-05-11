@@ -18,8 +18,23 @@ void getFitness(vector<tuple<int, int>> *fitness, vector<GameOfLife*> *populatio
     (*fitness)[i] = tuple<int, int>((*population)[i]->makeStep(steps), i);
 }
 
-void empty(){};
+// picks random individual based on relative rank in fitness
+int getRandomParent(vector<tuple<int, int>> fitness) {
+  int n = fitness.size();
+  int sum = (1 / 2.0) * n * (n + 1);
+  int x = (rand() % sum) + 1; // <1,sum>
+  int tmp = 0;
 
+  for (int i = n; i >= 1; --i) {
+    tmp += i;
+
+    if (x <= tmp) {
+      return get<1>(fitness[n - i]);
+    }
+  }
+
+  return 0;
+}
 
 int main(int argc, char const *argv[]) {
   ifstream configFile("config.json");
@@ -36,7 +51,6 @@ int main(int argc, char const *argv[]) {
   int parentPopulation =    config["ParentPopulation"].asInt();
   int mutationPercetange =  config["MaxMutationPercetange"].asInt();
   int generations =         config["Generations"].asInt();
-  // 0 for uniform, otherwise it says how many squares are combined
   int crossoverType =       config["Crossover"].asInt();
   int concentratedMutation =config["ConcentratedMutation"].asInt();
 
@@ -99,7 +113,6 @@ int main(int argc, char const *argv[]) {
 
 
     // copy best individuals to parents
-    // TODO: add more ways of picking parents
     for (int i = 0; i < parentPopulation; i++) {
       GameOfLife* individual = population[get<1>(fitness[i])];
       parents[i]->loadMap(individual->getMap());
