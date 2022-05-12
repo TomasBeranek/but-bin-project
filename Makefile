@@ -29,10 +29,10 @@ debug: clean
 	./debug
 
 remove_zip:
-	rm xberan46.zip
+	rm -f xberan46.zip
 
 zip: remove_zip
-	zip -r xberan46.zip patterns/ src/ config.json measure.py Makefile
+	zip -r xberan46.zip patterns/ src/ config.json measure.py Makefile presentation/presentation.pdf doc/documentation.pdf statistics.csv statistics2.csv statistics.py show_graphs.py graphs/
 
 statistics:
 	python3 statistics.py "./$(BIN)"
