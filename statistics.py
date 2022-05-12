@@ -2,11 +2,18 @@ import subprocess as subprocess
 import sys
 import json
 from parse import parse
+import pandas as pd
 
-def changeConfig(original_config, target=None, mutation=None, crossover=None, concentration=None):
+def changeConfig(original_config, target=None, mutation=None, crossover=None, concentration=None, population=None, generations=None):
     config = original_config.copy()
 
     config["Generations"] = 500
+
+    if population:
+        config["Population"] = population
+
+    if generations:
+        config["Generations"] = generations
 
     if target:
         config["TargetMap"] = target
@@ -49,7 +56,7 @@ if __name__ == '__main__':
     files = ["patterns/1random64.gol", "patterns/2random64.gol", "patterns/3random64.gol"]
     runs = 5
 
-    normal crossover and normal mutation
+    # normal crossover and normal mutation
     crossover = [-1, -2, -5, -10, -15, -20, -40, -50]
     mutation  = [ 1,  2,  3,   4,   5,  10,  15,  20]
 
@@ -98,6 +105,48 @@ if __name__ == '__main__':
 
                     with open('statistics.csv', 'a') as outf:
                         outf.write(f"spatial,{c},{m},{con},{round(avg_best_fitness)},{round(avg_generation)}\n")
+
+
+    # spatial,2,-1,30,825,221
+    # get best config and run sensitivy test on generations/population
+    df = pd.read_csv('statistics.csv')
+    df['BestFitness'] = pd.to_numeric(df['BestFitness'])
+
+    best_config = df.iloc[df['BestFitness'].idxmin()]
+
+    crossover = int(best_config['Crossover'])
+    mutation = int(best_config['MaxMutationPercetange'])
+    concentration = int(best_config['ConcentratedMutation'])
+
+    price = 180000
+
+    population = [12, 36, 48, 96, 144, 492, 996]
+    generations = [price // x for x in population]
+
+    # print CSV header
+    print("Generations,Population,BestFitness,Generation")
+
+    with open('statistics2.csv', 'a') as outf:
+        outf.write("Generations,Population,BestFitness,Generation\n")
+
+    for p,g in zip(population, generations):
+        avg_best_fitness = 0
+        avg_generation = 0
+
+        for file in files:
+            for run in range(0,runs):
+                changeConfig(original_config, target=file, population=p, generations=g, crossover=crossover, mutation=mutation, concentration=concentration)
+                best_fitness, generation = runWithConfig(command)
+
+                avg_best_fitness += best_fitness
+                avg_generation += generation
+
+        avg_best_fitness /= runs*len(files)
+        avg_generation /= runs*len(files)
+        print(f"{g},{p},{round(avg_best_fitness)},{round(avg_generation)}")
+
+        with open('statistics2.csv', 'a') as outf:
+            outf.write(f"{g},{p},{round(avg_best_fitness)},{round(avg_generation)}\n")
 
     # restore original config
     with open('config.json', 'w') as f:
