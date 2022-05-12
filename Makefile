@@ -1,3 +1,10 @@
+# File    Makefile
+# Author  Tomas Beranek <xberan46@stud.fit.vutbr.cz>
+# Brief   Using EA to find the initial configuration of a Game of Life 2D cellular
+#         automaton that leads in 1 to N steps to the desired configuration
+# Date    8.5.2022
+# Up2date sources can be found at: https://github.com/TomasBeranek/but-bin-project
+
 CPPC=g++
 CPPC_OPTS=-Wall -Ofast -std=c++11
 SRC_DIR=src
